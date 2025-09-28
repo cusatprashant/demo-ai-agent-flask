@@ -1,0 +1,63 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI Interface</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        textarea { width: 100%; height: 150px; padding: 10px; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        #response { min-height: 100px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+        .loading { display: none; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agentic AI Assistant</h1>
+        <form id="promptForm">
+            <textarea id="prompt" name="prompt" placeholder="Enter your prompt here..."></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <div class="loading" id="loading">Processing...</div>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('promptForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const prompt = document.getElementById('prompt').value;
+            const responseDiv = document.getElementById('response');
+            const loadingDiv = document.getElementById('loading');
+            
+            if (!prompt.trim()) return;
+            
+            // Show loading indicator
+            loadingDiv.style.display = 'block';
+            responseDiv.innerHTML = '';
+            
+            // Send request to backend
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                responseDiv.innerHTML = `<strong>Response:</strong><br>${data.response}`;
+            })
+            .catch(error => {
+                loadingDiv.style.display = 'none';
+                responseDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            });
+        });
+    </script>
+</body>
+</html>

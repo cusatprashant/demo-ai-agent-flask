@@ -4,117 +4,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agentic AI Interface</title>
+    <title>NVIDIA AI Chat</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            background-color: #f5f5f5;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
         }
-        h1 { color: #2c3e50; text-align: center; }
-        textarea { 
-            width: 100%; 
-            height: 150px; 
-            padding: 12px; 
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            resize: vertical;
-            font-size: 16px;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        button { 
-            padding: 12px 25px; 
-            background: #3498db; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            border-radius: 5px;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        button:hover { background: #2980b9; }
-        #response { 
-            min-height: 100px; 
-            padding: 15px; 
-            background: #ecf0f1; 
-            border-radius: 5px; 
-            white-space: pre-wrap;
-        }
-        .loading { 
-            display: none; 
-            color: #666; 
+        header {
             text-align: center;
-            padding: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
         }
-        .error { color: #e74c3c; }
-        .success { color: #27ae60; }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .chat-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            height: 500px;
+            overflow-y: auto;
+        }
+        .message {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background: rgba(255, 255, 255, 0.15);
+            margin-left: 20%;
+        }
+        .bot-message {
+            background: rgba(92, 107, 192, 0.3);
+            margin-right: 20%;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        #user-input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+        #user-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        #send-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        #send-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        #send-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 15px;
+            text-align: center;
+            font-style: italic;
+            opacity: 0.8;
+        }
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: rgba(255, 0, 0, 0.1);
+            display: none;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Agentic AI Assistant</h1>
-        <form id="promptForm">
-            <textarea 
-                id="prompt" 
-                name="prompt" 
-                placeholder="Enter your prompt here... (e.g., 'Explain quantum computing in simple terms')"
-            ></textarea>
-            <button type="submit">Submit to AI</button>
-        </form>
-        <div class="loading" id="loading">Processing with OpenAI...</div>
-        <div id="response"></div>
+        <header>
+            <h1>NVIDIA AI Assistant</h1>
+            <p class="subtitle">Powered by Llama 3 70B Instruct</p>
+        </header>
+        
+        <div class="error" id="error-message"></div>
+        
+        <div class="chat-container" id="chat-container">
+            <div class="message bot-message">
+                Hello! I'm your AI assistant. How can I help you today?
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typing-indicator">
+            Thinking...
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+            <button id="send-btn">Send</button>
+        </div>
+        
+        <footer>
+            <p>NVIDIA Developer API Integration | Flask Application</p>
+        </footer>
     </div>
 
     <script>
-        document.getElementById('promptForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const prompt = document.getElementById('prompt').value;
-            const responseDiv = document.getElementById('response');
-            const loadingDiv = document.getElementById('loading');
-            
-            if (!prompt.trim()) {
-                responseDiv.innerHTML = '<span class="error">Please enter a prompt.</span>';
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const errorMessage = document.getElementById('error-message');
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) {
+                showError('Please enter a message');
                 return;
             }
+
+            // Add user message to chat
+            addMessage(message, true);
+            userInput.value = '';
             
-            // Show loading indicator
-            loadingDiv.style.display = 'block';
-            responseDiv.innerHTML = '';
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+            sendBtn.disabled = true;
             
-            // Send request to backend
-            fetch('/process', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `prompt=${encodeURIComponent(prompt)}`
-            })
-            .then(response => {
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
                 if (!response.ok) {
-                    return response.json().then(err => { throw err; });
+                    throw new Error(data.error || 'Unknown error');
                 }
-                return response.json();
-            })
-            .then(data => {
-                loadingDiv.style.display = 'none';
-                responseDiv.innerHTML = `<div class="success"><strong>AI Response:</strong><br>${data.response}</div>`;
-            })
-            .catch(error => {
-                loadingDiv.style.display = 'none';
-                responseDiv.innerHTML = `<div class="error"><strong>Error:</strong> ${error.response || error.message || 'Unknown error occurred'}</div>`;
-            });
+                
+                addMessage(data.response);
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Failed to get response. Please try again.');
+                addMessage('Sorry, I encountered an error. Please try again.', false);
+            } finally {
+                typingIndicator.style.display = 'none';
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
         });
+
+        // Initial focus on input
+        userInput.focus();
     </script>
 </body>
 </html>

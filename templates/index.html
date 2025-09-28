@@ -6,23 +6,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agentic AI Interface</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .container { display: flex; flex-direction: column; gap: 20px; }
-        textarea { width: 100%; height: 150px; padding: 10px; }
-        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background: #45a049; }
-        #response { min-height: 100px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
-        .loading { display: none; color: #666; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; text-align: center; }
+        textarea { 
+            width: 100%; 
+            height: 150px; 
+            padding: 12px; 
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            font-size: 16px;
+        }
+        button { 
+            padding: 12px 25px; 
+            background: #3498db; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover { background: #2980b9; }
+        #response { 
+            min-height: 100px; 
+            padding: 15px; 
+            background: #ecf0f1; 
+            border-radius: 5px; 
+            white-space: pre-wrap;
+        }
+        .loading { 
+            display: none; 
+            color: #666; 
+            text-align: center;
+            padding: 10px;
+        }
+        .error { color: #e74c3c; }
+        .success { color: #27ae60; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Agentic AI Assistant</h1>
         <form id="promptForm">
-            <textarea id="prompt" name="prompt" placeholder="Enter your prompt here..."></textarea>
-            <button type="submit">Submit</button>
+            <textarea 
+                id="prompt" 
+                name="prompt" 
+                placeholder="Enter your prompt here... (e.g., 'Explain quantum computing in simple terms')"
+            ></textarea>
+            <button type="submit">Submit to AI</button>
         </form>
-        <div class="loading" id="loading">Processing...</div>
+        <div class="loading" id="loading">Processing with OpenAI...</div>
         <div id="response"></div>
     </div>
 
@@ -34,7 +83,10 @@
             const responseDiv = document.getElementById('response');
             const loadingDiv = document.getElementById('loading');
             
-            if (!prompt.trim()) return;
+            if (!prompt.trim()) {
+                responseDiv.innerHTML = '<span class="error">Please enter a prompt.</span>';
+                return;
+            }
             
             // Show loading indicator
             loadingDiv.style.display = 'block';
@@ -48,14 +100,19 @@
                 },
                 body: `prompt=${encodeURIComponent(prompt)}`
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
             .then(data => {
                 loadingDiv.style.display = 'none';
-                responseDiv.innerHTML = `<strong>Response:</strong><br>${data.response}`;
+                responseDiv.innerHTML = `<div class="success"><strong>AI Response:</strong><br>${data.response}</div>`;
             })
             .catch(error => {
                 loadingDiv.style.display = 'none';
-                responseDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                responseDiv.innerHTML = `<div class="error"><strong>Error:</strong> ${error.response || error.message || 'Unknown error occurred'}</div>`;
             });
         });
     </script>

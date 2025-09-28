@@ -1,5 +1,6 @@
 # app/routes/views.py
 from flask import render_template, request, jsonify, current_app
+import openai
 from app.routes import main_bp
 from app.extensions import openai_client
 from app.utils.validators import validate_prompt
@@ -26,7 +27,7 @@ def chat():
 
     try:
         response = openai_client.chat.completions.create(
-            model="meta/llama3-70b-instruct",
+            model="qwen/qwen2.5-coder-32b-instruct",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1024,
@@ -39,6 +40,13 @@ def chat():
             'response': response.choices[0].message.content.strip()
         })
 
-    except Exception as e:
+    except openai.RateLimitError:
+        return jsonify({'error': 'Rate limit exceeded. Please try again later.'}), 429
+    except openai.APIConnectionError:
+        return jsonify({'error': 'Unable to connect to AI service. Please check your connection.'}), 503
+    except openai.APIStatusError as e:
         current_app.logger.error(f"OpenAI API error: {e}")
+        return jsonify({'error': f'Service error: {e.message}'}), e.status_code
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error: {e}")
         return jsonify({'error': 'Service temporarily unavailable'}), 503

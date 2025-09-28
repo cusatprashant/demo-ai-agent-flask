@@ -111,4 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Focus input on load
     userInput.focus();
+    
+    // Set initial timestamp
+    document.querySelector('.timestamp[data-time="initial"]').textContent = getCurrentTime();
 });

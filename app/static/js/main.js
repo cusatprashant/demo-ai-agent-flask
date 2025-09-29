@@ -41,7 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ prompt })
+                body: JSON.stringify({ 
+                    prompt,
+                    format: 'html'  // Request HTML formatting for better display
+                })
             });
 
             const data = await response.json();
@@ -50,8 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error || 'Server error');
             }
 
-            // Add bot response to chat
-            addMessage(data.response, 'bot');
+            // Add bot response to chat with HTML formatting
+            addMessage(data.response, 'bot', true);
+            
+            // Log format info for debugging
+            console.log('Response format used:', data.format_used);
         } catch (error) {
             console.error('Chat error:', error);
             showError(error.message || 'Failed to get response. Please try again.');
@@ -64,13 +70,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function addMessage(content, sender) {
+    function addMessage(content, sender, isHtml = false) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', `${sender}-message`);
         
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('message-content');
-        contentDiv.textContent = content;
+        
+        if (isHtml && sender === 'bot') {
+            // For bot messages with HTML formatting
+            contentDiv.innerHTML = content;
+        } else {
+            // For user messages or plain text
+            contentDiv.textContent = content;
+        }
         
         const timestampDiv = document.createElement('div');
         timestampDiv.classList.add('timestamp');

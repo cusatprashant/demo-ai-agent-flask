@@ -28,8 +28,6 @@ cp .env.example .env
 NVIDIA_DEV_API_KEY=your_actual_api_key_here
 ```
 
-**Get your NVIDIA API key from:** https://build.nvidia.com/explore/discover
-
 ### 3. Test Your Setup
 ```bash
 # Test API connection
